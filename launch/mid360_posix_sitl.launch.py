@@ -11,6 +11,11 @@ from launch.substitutions import LaunchConfiguration
 # PX4-Autopilot 根目录。PX4 不在主目录时，在这里修改。
 PX4_DIR = Path.home() / "PX4-Autopilot"
 
+# MID-360 模型目录。默认自动定位安装后的 models，也可改为绝对路径。
+MID360_MODELS_PATH = (
+    Path(get_package_share_directory("mid360_simulation_plugin_ros2")) / "models"
+)
+
 # 默认仿真世界。可改为自己 world 文件的绝对路径。
 DEFAULT_WORLD = PX4_DIR / "Tools" / "simulation" / "gz" / "worlds" / "default.sdf"
 
@@ -76,8 +81,7 @@ def _start(context):
         "1", "true", "yes", "on"
     }
 
-    share = Path(get_package_share_directory("mid360_simulation_plugin_ros2"))
-    model_root = share / "models"
+    model_root = MID360_MODELS_PATH
     px4_build = px4_dir / "build" / "px4_sitl_default"
     px4_binary = px4_build / "bin" / "px4"
     px4_rootfs = px4_build / "rootfs"

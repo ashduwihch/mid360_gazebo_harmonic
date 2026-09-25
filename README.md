@@ -106,8 +106,8 @@ cp ~/mid360_ws/src/mid360_gazebo_harmonic/launch/mid360_posix_sitl.launch.py \
   ~/PX4-Autopilot/launch/
 ```
 
-启动文件开头的“用户配置区”集中放置了 PX4 路径、world、
-机型、出生坐标、Gazebo 界面和 NVIDIA 显卡开关，可按需直接修改。
+启动文件开头的“用户配置区”集中放置了 PX4 路径、MID-360 模型路径、
+world、机型、出生坐标、Gazebo 界面和 NVIDIA 显卡开关，可按需直接修改。
 
 确保 PX4 SITL 已编译，然后在该目录启动：
 
