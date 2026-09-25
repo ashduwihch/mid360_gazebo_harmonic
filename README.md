@@ -10,8 +10,8 @@ FAST-LIO2 ROS 2 版。
 如果本项目对您有帮助，欢迎点亮右上角的 ⭐ **Star**！
 
 <p align="center">
-  <img src="docs/images/mid360_model.png" alt="MID-360 仿真模型" width="32%" />
-  <img src="docs/images/fastlio2_mapping.png" alt="MID-360 建图效果" width="64%" />
+  <img src="docs/images/mid360_model_square.png" alt="MID-360 仿真模型" width="48%" />
+  <img src="docs/images/fastlio2_mapping_square.png" alt="MID-360 建图效果" width="48%" />
 </p>
 
 ## 功能
