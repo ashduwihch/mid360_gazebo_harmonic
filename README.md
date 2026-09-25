@@ -133,19 +133,14 @@ ros2 launch ./mid360_posix_sitl.launch.py x:=2 y:=3 z:=0.3
 
 ## 输出类型
 
-单独 MID-360 模型的配置位于：
+所有 MID-360 参数统一在以下文件中配置：
 
 ```text
 ~/mid360_ws/src/mid360_gazebo_harmonic/packages/mid360_simulation_plugin_ros2/models/mid360/model.sdf
 ```
 
-X500 组合模型的配置位于：
-
-```text
-~/mid360_ws/src/mid360_gazebo_harmonic/packages/mid360_simulation_plugin_ros2/models/x500_gimbal_mid360/model.sdf
-```
-
-在对应文件中找到 `<publish_pointcloud_type>` 后设置输出类型。
+X500 组合模型会直接引用这个 MID-360 模型，不再复制雷达参数。
+在该文件中找到 `<publish_pointcloud_type>` 后设置输出类型。
 
 `PointCloud2`：
 

@@ -101,9 +101,9 @@ def _start(context):
     sim_env["GZ_SIM_RESOURCE_PATH"] = _prepend_unique(
         sim_env.get("GZ_SIM_RESOURCE_PATH", ""),
         [
+            str(model_root),
             str(px4_dir / "custom_gazebo" / "models"),
             str(px4_dir / "Tools" / "simulation" / "gz" / "models"),
-            str(model_root),
         ],
     )
     sim_env["GZ_SIM_SYSTEM_PLUGIN_PATH"] = _prepend_unique(

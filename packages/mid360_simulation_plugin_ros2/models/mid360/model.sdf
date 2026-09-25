@@ -70,7 +70,7 @@
       <imu_topic>/livox/imu</imu_topic>
       <gz_imu_topic>/mid360/imu_gz</gz_imu_topic>
       <frame_id>livox_frame</frame_id>
-      <publish_pointcloud_type>2</publish_pointcloud_type>
+      <publish_pointcloud_type>3</publish_pointcloud_type>
     </plugin>
   </model>
 </sdf>
