@@ -7,6 +7,30 @@ from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 
 
+# ======================== 用户配置区 ========================
+# PX4-Autopilot 根目录。PX4 不在主目录时，在这里修改。
+PX4_DIR = Path.home() / "PX4-Autopilot"
+
+# 默认仿真世界。可改为自己 world 文件的绝对路径。
+DEFAULT_WORLD = PX4_DIR / "Tools" / "simulation" / "gz" / "worlds" / "default.sdf"
+
+# PX4 模型名称和自启动配置。4019 是 PX4 自带的 X500 云台配置。
+PX4_MODEL = "gz_x500_gimbal_mid360"
+PX4_AUTOSTART_ID = "4019"
+
+# 飞机默认出生坐标，单位为米。
+DEFAULT_X = "0"
+DEFAULT_Y = "0"
+DEFAULT_Z = "0.3"
+
+# True：显示 Gazebo 界面；False：仅运行无界面仿真。
+DEFAULT_GUI = True
+
+# NVIDIA 独立显卡用户保持 True；其他显卡可改为 False。
+USE_NVIDIA_GPU = True
+# ============================================================
+
+
 def _prepend_unique(current, entries):
     paths = []
     for entry in [*entries, *current.split(":")]:
@@ -43,7 +67,7 @@ def _prepare_server_config(px4_dir, world):
 
 
 def _start(context):
-    px4_dir = Path(os.environ.get("PX4_AUTOPILOT_DIR", Path.home() / "PX4-Autopilot"))
+    px4_dir = PX4_DIR
     world = Path(LaunchConfiguration("world").perform(context)).expanduser()
     x = LaunchConfiguration("x").perform(context)
     y = LaunchConfiguration("y").perform(context)
@@ -87,8 +111,9 @@ def _start(context):
         sim_env["GZ_SIM_SERVER_CONFIG_PATH"] = str(server_config)
 
     gz_env = sim_env.copy()
-    gz_env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
-    gz_env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+    if USE_NVIDIA_GPU:
+        gz_env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
+        gz_env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
     gz_cmd = ["gz", "sim", "-r"]
     if not gui:
         gz_cmd.append("-s")
@@ -97,8 +122,8 @@ def _start(context):
     px4_env = sim_env.copy()
     px4_env.update({
         "PX4_GZ_STANDALONE": "1",
-        "PX4_SYS_AUTOSTART": "4019",
-        "PX4_SIM_MODEL": "gz_x500_gimbal_mid360",
+        "PX4_SYS_AUTOSTART": PX4_AUTOSTART_ID,
+        "PX4_SIM_MODEL": PX4_MODEL,
         "PX4_GZ_MODELS": str(model_root),
         "PX4_GZ_WORLDS": str(world.parent),
         "PX4_GZ_MODEL_POSE": f"{x},{y},{z}",
@@ -118,14 +143,11 @@ def _start(context):
 
 
 def generate_launch_description():
-    px4_dir = Path(os.environ.get("PX4_AUTOPILOT_DIR", Path.home() / "PX4-Autopilot"))
-    default_world = px4_dir / "Tools" / "simulation" / "gz" / "worlds" / "default.sdf"
-
     return LaunchDescription([
-        DeclareLaunchArgument("world", default_value=str(default_world)),
-        DeclareLaunchArgument("x", default_value="0"),
-        DeclareLaunchArgument("y", default_value="0"),
-        DeclareLaunchArgument("z", default_value="0.3"),
-        DeclareLaunchArgument("gui", default_value="true"),
+        DeclareLaunchArgument("world", default_value=str(DEFAULT_WORLD)),
+        DeclareLaunchArgument("x", default_value=DEFAULT_X),
+        DeclareLaunchArgument("y", default_value=DEFAULT_Y),
+        DeclareLaunchArgument("z", default_value=DEFAULT_Z),
+        DeclareLaunchArgument("gui", default_value=str(DEFAULT_GUI).lower()),
         OpaqueFunction(function=_start),
     ])
