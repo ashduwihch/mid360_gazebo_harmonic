@@ -63,11 +63,14 @@ def _prepare_server_config(px4_dir, world):
         <delta_rot>0.001</delta_rot>
       </update>
     </plugin>"""
-    # PX4 的 GStreamer 相机编码系统在无视频接收端时会持续占用内存。
-    # 仅移除该系统；云台、普通相机传感器和其余 PX4 系统保持不变。
+    # Ubuntu 22.04 的 GStreamer 1.20 与新款 NVIDIA GPU 的 NVENC preset
+    # 不兼容，会导致编码管线失败并持续占用内存。保留视频流，改用稳定的
+    # x264 软件编码；云台、相机传感器和其余 PX4 系统保持不变。
     source_text = source.read_text(encoding="utf-8").replace(
         '    <plugin entity_name="*" entity_type="world" filename="libGstCameraSystem.so" name="custom::GstCameraSystem"/>\n',
-        "",
+        '    <plugin entity_name="*" entity_type="world" filename="libGstCameraSystem.so" name="custom::GstCameraSystem">\n'
+        '      <useCuda>false</useCuda>\n'
+        '    </plugin>\n',
     )
     config = source_text.replace(
         "  </plugins>", f"{plugin}\n  </plugins>"
