@@ -131,6 +131,26 @@ ros2 launch ./mid360_posix_sitl.launch.py world:=/绝对路径/场景.sdf
 ros2 launch ./mid360_posix_sitl.launch.py x:=2 y:=3 z:=0.3
 ```
 
+### 相机视频与内存占用
+
+PX4 原方案默认让 `GstCameraSystem` 使用 NVIDIA `nvh264enc` 硬件编码。
+在 Ubuntu 22.04 的 GStreamer 1.20 与部分新款 NVIDIA GPU 组合下，
+NVENC preset 可能初始化失败，并导致 Gazebo 进程内存持续增长。
+相关问题和上游修复见
+[PX4-Autopilot #27944](https://github.com/PX4/PX4-Autopilot/pull/27944)。
+
+本项目的 PX4 启动文件保留了相机和 UDP 视频流，但在生成 Gazebo
+服务配置时将以下参数设为 `false`：
+
+```xml
+<useCuda>false</useCuda>
+```
+
+此时 `GstCameraSystem` 会改用 `x264enc` 软件编码，避免内存持续增长。
+视频仍输出到 UDP `5600` 端口，可在 QGroundControl 中选择
+`UDP h.264 Video Stream` 查看。该方案会额外占用约一个 CPU 核心，
+且不会直接修改 PX4 官方的 `server.config`。
+
 ## 输出类型
 
 所有 MID-360 参数统一在以下文件中配置：
