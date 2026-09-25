@@ -63,7 +63,13 @@ def _prepare_server_config(px4_dir, world):
         <delta_rot>0.001</delta_rot>
       </update>
     </plugin>"""
-    config = source.read_text(encoding="utf-8").replace(
+    # PX4 的 GStreamer 相机编码系统在无视频接收端时会持续占用内存。
+    # 仅移除该系统；云台、普通相机传感器和其余 PX4 系统保持不变。
+    source_text = source.read_text(encoding="utf-8").replace(
+        '    <plugin entity_name="*" entity_type="world" filename="libGstCameraSystem.so" name="custom::GstCameraSystem"/>\n',
+        "",
+    )
+    config = source_text.replace(
         "  </plugins>", f"{plugin}\n  </plugins>"
     )
     target = Path("/tmp") / f"mid360_gz_server_{os.getuid()}.config"
