@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>mid360_simulation_plugin_ros2</name>
+  <version>0.1.0</version>
+  <description>Native Gazebo Harmonic MID-360 raycast simulation for ROS 2.</description>
+  <maintainer email="lin@example.com">lin</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>ament_index_cpp</depend>
+  <depend>builtin_interfaces</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>rmagine</depend>
+  <depend>rmagine_gazebo_plugins</depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

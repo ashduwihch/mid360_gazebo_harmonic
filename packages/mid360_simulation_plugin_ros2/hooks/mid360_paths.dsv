@@ -1,0 +1,2 @@
+prepend-non-duplicate;GZ_SIM_SYSTEM_PLUGIN_PATH;lib
+prepend-non-duplicate;GZ_SIM_RESOURCE_PATH;share/mid360_simulation_plugin_ros2/models

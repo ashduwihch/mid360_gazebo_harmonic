@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <model name="mid360">
+    <link name="mid360_link">
+      <inertial>
+        <mass>0.265</mass>
+        <inertia>
+          <ixx>0.00045</ixx><iyy>0.00045</iyy><izz>0.00050</izz>
+        </inertia>
+      </inertial>
+      <collision name="body_collision">
+        <pose>0 0 0.028 0 0 0</pose>
+        <geometry><box><size>0.065 0.065 0.056</size></box></geometry>
+      </collision>
+      <collision name="dome_collision">
+        <pose>0 0 0.074 0 0 0</pose>
+        <geometry><sphere><radius>0.032</radius></sphere></geometry>
+      </collision>
+      <visual name="mid360_visual">
+        <geometry><mesh><uri>model://mid360/meshes/livox_mid-360-90x.dae</uri></mesh></geometry>
+      </visual>
+      <sensor name="mid360_imu" type="imu">
+        <always_on>true</always_on>
+        <update_rate>200</update_rate>
+        <topic>/mid360/imu_gz</topic>
+      </sensor>
+    </link>
+    <plugin filename="mid360_system"
+            name="mid360_simulation_plugin_ros2::Mid360System">
+      <link_name>mid360_link</link_name>
+      <ray_backend>embree</ray_backend>
+      <map_key>default</map_key>
+      <csv_file>mid360-real-centr.csv</csv_file>
+      <samples>20000</samples>
+      <downsample>1</downsample>
+      <update_rate>10</update_rate>
+      <point_rate>200000</point_rate>
+      <min_range>0.1</min_range>
+      <max_range>40.0</max_range>
+      <topic>/livox/lidar</topic>
+      <imu_topic>/livox/imu</imu_topic>
+      <gz_imu_topic>/mid360/imu_gz</gz_imu_topic>
+      <frame_id>livox_frame</frame_id>
+      <publish_pointcloud_type>2</publish_pointcloud_type>
+    </plugin>
+  </model>
+</sdf>

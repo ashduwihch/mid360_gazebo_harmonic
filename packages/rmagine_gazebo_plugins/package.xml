@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>rmagine_gazebo_plugins</name>
+  <version>0.1.0</version>
+  <description>Minimal Gazebo Harmonic collision-map bridge for rmagine Embree.</description>
+  <maintainer email="amock@uos.de">Alexander Mock</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>gz-sim8</depend>
+  <depend>gz-plugin2</depend>
+  <depend>gz-common5</depend>
+  <depend>rmagine</depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

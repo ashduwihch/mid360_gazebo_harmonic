@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <world name="mid360_test">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <dart><collision_detector>bullet</collision_detector></dart>
+    </physics>
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="librmagine_embree_map_system.so"
+            name="rmagine_gazebo_plugins::RmagineEmbreeMapSystem">
+      <update>
+        <rate_limit>30</rate_limit>
+        <delta_trans>0.001</delta_trans>
+        <delta_rot>0.001</delta_rot>
+      </update>
+    </plugin>
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry></collision>
+        <visual name="visual"><geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry></visual>
+      </link>
+    </model>
+    <include>
+      <uri>model://mid360</uri>
+      <pose>0 0 1 0 0 0</pose>
+    </include>
+    <model name="target_wall">
+      <static>true</static>
+      <pose>4 0 1 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.1 8 4</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.1 8 4</size></box></geometry></visual>
+      </link>
+    </model>
+  </world>
+</sdf>
