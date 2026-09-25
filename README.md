@@ -96,6 +96,38 @@ ros2 topic hz /livox/lidar
 ros2 topic hz /livox/imu
 ```
 
+## 与 PX4 SITL 一起启动
+
+仓库的 `launch` 目录提供了 PX4 联动启动文件。先将其复制到
+PX4 的 `launch` 目录：
+
+```bash
+cp ~/mid360_ws/src/mid360_gazebo_harmonic/launch/mid360_posix_sitl.launch.py \
+  ~/PX4-Autopilot/launch/
+```
+
+确保 PX4 SITL 已编译，然后在该目录启动：
+
+```bash
+cd ~/PX4-Autopilot/launch
+ros2 launch ./mid360_posix_sitl.launch.py
+```
+
+该指令会同时启动 Gazebo Harmonic、PX4 SITL 和带 MID-360 的 X500。
+默认使用 PX4 自带的 `default.sdf` 世界。
+
+启动指定 world：
+
+```bash
+ros2 launch ./mid360_posix_sitl.launch.py world:=/绝对路径/场景.sdf
+```
+
+修改飞机出生位置：
+
+```bash
+ros2 launch ./mid360_posix_sitl.launch.py x:=2 y:=3 z:=0.3
+```
+
 ## 输出类型
 
 单独 MID-360 模型的配置位于：
@@ -151,6 +183,8 @@ Livox `CustomMsg`：
 
 ```text
 mid360_gazebo_harmonic/
+├── launch/
+│   └── mid360_posix_sitl.launch.py
 └── packages/
     ├── mid360_simulation_plugin_ros2/
     ├── rmagine/
