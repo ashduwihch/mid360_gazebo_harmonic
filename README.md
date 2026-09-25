@@ -24,7 +24,7 @@ FAST-LIO2 ROS 2 版。
 - 基于 Gazebo `collision` 几何和 Embree 批量求交。
 - 支持静态、动态模型与自机排除。
 
-## 部署
+## 快速开始
 
 ### 1. 安装编译依赖
 
@@ -79,79 +79,7 @@ source ~/.bashrc
 
 之后新开终端即可使用插件。
 
-## 测试
-
-启动自带测试世界：
-
-```bash
-ros2 launch mid360_simulation_plugin_ros2 mid360_test.launch.py
-```
-
-新开终端检查话题：
-
-```bash
-ros2 topic type /livox/lidar
-ros2 topic type /livox/imu
-ros2 topic hz /livox/lidar
-ros2 topic hz /livox/imu
-```
-
-## 与 PX4 SITL 一起启动
-
-仓库的 `launch` 目录提供了 PX4 联动启动文件。先将其复制到
-PX4 的 `launch` 目录：
-
-```bash
-cp ~/mid360_ws/src/mid360_gazebo_harmonic/launch/mid360_posix_sitl.launch.py \
-  ~/PX4-Autopilot/launch/
-```
-
-启动文件开头的“用户配置区”集中放置了 PX4 路径、MID-360 模型路径、
-world、机型、出生坐标、Gazebo 界面和 NVIDIA 显卡开关，可按需直接修改。
-
-确保 PX4 SITL 已编译，然后在该目录启动：
-
-```bash
-cd ~/PX4-Autopilot/launch
-ros2 launch ./mid360_posix_sitl.launch.py
-```
-
-该指令会同时启动 Gazebo Harmonic、PX4 SITL 和带 MID-360 的 X500。
-默认使用 PX4 自带的 `default.sdf` 世界。
-
-启动指定 world：
-
-```bash
-ros2 launch ./mid360_posix_sitl.launch.py world:=/绝对路径/场景.sdf
-```
-
-修改飞机出生位置：
-
-```bash
-ros2 launch ./mid360_posix_sitl.launch.py x:=2 y:=3 z:=0.3
-```
-
-### 相机视频与内存占用
-
-PX4 原方案默认让 `GstCameraSystem` 使用 NVIDIA `nvh264enc` 硬件编码。
-在 Ubuntu 22.04 的 GStreamer 1.20 与部分新款 NVIDIA GPU 组合下，
-NVENC preset 可能初始化失败，并导致 Gazebo 进程内存持续增长。
-相关问题和上游修复见
-[PX4-Autopilot #27944](https://github.com/PX4/PX4-Autopilot/pull/27944)。
-
-本项目的 PX4 启动文件保留了相机和 UDP 视频流，但在生成 Gazebo
-服务配置时将以下参数设为 `false`：
-
-```xml
-<useCuda>false</useCuda>
-```
-
-此时 `GstCameraSystem` 会改用 `x264enc` 软件编码，避免内存持续增长。
-视频仍输出到 UDP `5600` 端口，可在 QGroundControl 中选择
-`UDP h.264 Video Stream` 查看。该方案会额外占用约一个 CPU 核心，
-且不会直接修改 PX4 官方的 `server.config`。
-
-## 输出类型
+## MID-360 输出配置
 
 所有 MID-360 参数统一在以下文件中配置：
 
@@ -174,7 +102,87 @@ Livox `CustomMsg`：
 <publish_pointcloud_type>3</publish_pointcloud_type>
 ```
 
-## 在 world 中使用
+## 基础测试
+
+启动自带测试世界：
+
+```bash
+ros2 launch mid360_simulation_plugin_ros2 mid360_test.launch.py
+```
+
+新开终端检查话题：
+
+```bash
+ros2 topic type /livox/lidar
+ros2 topic type /livox/imu
+ros2 topic hz /livox/lidar
+ros2 topic hz /livox/imu
+```
+
+## PX4 SITL 联动
+
+### 1. 复制联动启动文件
+
+仓库的 `launch` 目录提供了 PX4 联动启动文件。先将其复制到
+PX4 的 `launch` 目录：
+
+```bash
+cp ~/mid360_ws/src/mid360_gazebo_harmonic/launch/mid360_posix_sitl.launch.py \
+  ~/PX4-Autopilot/launch/
+```
+
+### 2. 修改启动配置
+
+启动文件开头的“用户配置区”集中放置了 PX4 路径、MID-360 模型路径、
+world、机型、出生坐标、Gazebo 界面和 NVIDIA 显卡开关，可按需直接修改。
+
+### 3. 启动仿真
+
+确保 PX4 SITL 已编译，然后在该目录启动：
+
+```bash
+cd ~/PX4-Autopilot/launch
+ros2 launch ./mid360_posix_sitl.launch.py
+```
+
+该指令会同时启动 Gazebo Harmonic、PX4 SITL 和带 MID-360 的 X500。
+默认使用 PX4 自带的 `default.sdf` 世界。
+
+### 4. 常用启动参数
+
+启动指定 world：
+
+```bash
+ros2 launch ./mid360_posix_sitl.launch.py world:=/绝对路径/场景.sdf
+```
+
+修改飞机出生位置：
+
+```bash
+ros2 launch ./mid360_posix_sitl.launch.py x:=2 y:=3 z:=0.3
+```
+
+### 额外提示：相机视频与内存占用问题
+
+PX4 原方案默认让 `GstCameraSystem` 使用 NVIDIA `nvh264enc` 硬件编码。
+在 Ubuntu 22.04 的 GStreamer 1.20 与部分新款 NVIDIA GPU 组合下，
+NVENC preset 可能初始化失败，并导致 Gazebo 进程内存持续增长。
+相关问题和上游修复见
+[PX4-Autopilot #27944](https://github.com/PX4/PX4-Autopilot/pull/27944)。
+
+本项目的 PX4 启动文件保留了相机和 UDP 视频流，但在生成 Gazebo
+服务配置时将以下参数设为 `false`：
+
+```xml
+<useCuda>false</useCuda>
+```
+
+此时 `GstCameraSystem` 会改用 `x264enc` 软件编码，避免内存持续增长。
+视频仍输出到 UDP `5600` 端口，可在 QGroundControl 中选择
+`UDP h.264 Video Stream` 查看。该方案会额外占用约一个 CPU 核心，
+且不会直接修改 PX4 官方的 `server.config`。
+
+## 在自定义 World 中使用
 
 在 `<world>` 中加入一次 Embree 地图系统：
 
