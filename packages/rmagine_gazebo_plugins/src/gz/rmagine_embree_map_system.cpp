@@ -747,6 +747,27 @@ void RmagineEmbreeMapSystem::PostUpdate(
   const gz::sim::UpdateInfo &_info,
   const gz::sim::EntityComponentManager &_ecm)
 {
+  // Capture one-tick topology notifications on every physics iteration.
+  // Processing still remains rate-limited below; only these cheap entity-id
+  // inserts run at the full simulation rate.
+  _ecm.EachNew<gz::sim::components::Collision, gz::sim::components::Geometry>(
+    [&](const gz::sim::Entity &entity,
+        const gz::sim::components::Collision *,
+        const gz::sim::components::Geometry *) -> bool
+    {
+      pending_additions_.insert(entity);
+      return true;
+    });
+
+  _ecm.EachRemoved<gz::sim::components::Collision, gz::sim::components::Geometry>(
+    [&](const gz::sim::Entity &entity,
+        const gz::sim::components::Collision *,
+        const gz::sim::components::Geometry *) -> bool
+    {
+      pending_removals_.insert(entity);
+      return true;
+    });
+
   if(_info.paused)
   {
     return;
@@ -821,6 +842,8 @@ void RmagineEmbreeMapSystem::PostUpdate(
     RebuildObjectEntityMap();
     MapRegistry::Instance().SetEmbreeMap("default", map_);
     map_built_ = true;
+    pending_additions_.clear();
+    pending_removals_.clear();
 
     if(debug_)
     {
@@ -838,30 +861,24 @@ void RmagineEmbreeMapSystem::PostUpdate(
   // EachRemoved that tick and never again. Processing additions before
   // removals turns that into a harmless add-then-immediately-remove
   // instead of a permanent zombie instance baked into the scene forever.
-  _ecm.EachNew<gz::sim::components::Collision, gz::sim::components::Geometry>(
-    [&](const gz::sim::Entity &entity,
-        const gz::sim::components::Collision *,
-        const gz::sim::components::Geometry *) -> bool
+  for(const auto entity : pending_additions_)
+  {
+    if(AddVisual(entity, _ecm))
     {
-      if(AddVisual(entity, _ecm))
-      {
-        topology_dirty = true;
-      }
-      return true;
-    });
+      topology_dirty = true;
+    }
+  }
+  pending_additions_.clear();
 
   // 2. Removals second.
-  _ecm.EachRemoved<gz::sim::components::Collision, gz::sim::components::Geometry>(
-    [&](const gz::sim::Entity &entity,
-        const gz::sim::components::Collision *,
-        const gz::sim::components::Geometry *) -> bool
+  for(const auto entity : pending_removals_)
+  {
+    if(RemoveVisual(entity))
     {
-      if(RemoveVisual(entity))
-      {
-        topology_dirty = true;
-      }
-      return true;
-    });
+      topology_dirty = true;
+    }
+  }
+  pending_removals_.clear();
 
   // 3. Shape/scale changes on already-tracked entities.
   if(SyncGeometryChanges(_ecm))

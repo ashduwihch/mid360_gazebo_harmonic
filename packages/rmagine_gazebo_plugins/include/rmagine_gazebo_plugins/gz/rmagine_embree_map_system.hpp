@@ -128,6 +128,11 @@ private:
   // achieves the same functional result via the same externally-configured
   // list pattern `ignore_model` above already uses.
   std::unordered_set<std::string> ignored_link_names_;
+  // Gazebo only marks EachNew / EachRemoved entities for one simulation
+  // iteration. Cache those events before the rate limiter so a 30 Hz map
+  // update cannot miss changes produced by a 250 Hz physics loop.
+  std::unordered_set<gz::sim::Entity> pending_additions_;
+  std::unordered_set<gz::sim::Entity> pending_removals_;
   std::unordered_map<gz::sim::Entity, TrackedVisual> tracked_visuals_;
   std::unordered_map<PrimitiveSceneId, rmagine::EmbreeScenePtr> primitive_cache_;
   // Mesh-by-URI cache (keyed by "uri:mesh_scale").
