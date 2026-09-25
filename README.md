@@ -14,6 +14,10 @@ FAST-LIO2 ROS 2 版。
   <img src="docs/images/fastlio2_mapping_square.png" alt="MID-360 建图效果" width="38%" />
 </p>
 
+<p align="center">
+  <img src="docs/images/x500_gimbal_mid360.png" alt="搭载 MID-360 与云台相机的 X500" width="76%" />
+</p>
+
 ## 功能
 
 - MID-360 非重复扫描轨迹。
