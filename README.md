@@ -7,6 +7,13 @@ Gazebo Classic 已于 2025 年 1 月停止维护，原有的
 `PointCloud2`、Livox `CustomMsg` 和 IMU 接口，可无缝接入
 FAST-LIO2 ROS 2 版。
 
+如果本项目对您有帮助，欢迎点亮右上角的 ⭐ **Star**！
+
+<p align="center">
+  <img src="docs/images/mid360_model.png" alt="MID-360 仿真模型" width="32%" />
+  <img src="docs/images/fastlio2_mapping.png" alt="MID-360 建图效果" width="64%" />
+</p>
+
 ## 功能
 
 - MID-360 非重复扫描轨迹。
