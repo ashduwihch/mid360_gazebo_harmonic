@@ -55,6 +55,7 @@ git clone https://github.com/ashduwihch/mid360_gazebo_harmonic.git
 ```bash
 cd ~/mid360_ws
 source /opt/ros/humble/setup.bash
+source ~/livox_ws/install/setup.bash
 colcon build --symlink-install \
   --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
@@ -63,8 +64,8 @@ colcon build --symlink-install \
 然后编译 `src` 下的全部软件包。`--symlink-install` 方便修改模型和配置，
 `Release` 用于启用性能优化。
 
-Livox `CustomMsg` 消息类型由 `livox_ros_driver2` 提供。需要该输出时，
-请先自行准备 `livox_ros_driver2`。
+Livox `CustomMsg` 消息类型由 `livox_ros_driver2` 提供，因此编译插件前
+需要先安装并加载 `livox_ros_driver2`。
 
 ### 4. 永久加载环境
 
@@ -72,6 +73,7 @@ Livox `CustomMsg` 消息类型由 `livox_ros_driver2` 提供。需要该输出�
 
 ```bash
 source /opt/ros/humble/setup.bash
+source ~/livox_ws/install/setup.bash
 source ~/mid360_ws/install/setup.bash
 ```
 
