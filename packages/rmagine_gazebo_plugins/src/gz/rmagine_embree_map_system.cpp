@@ -32,6 +32,7 @@
 #include <rmagine/map/embree/EmbreeMesh.hpp>
 #include <rmagine/math/linalg.h>
 #include <rmagine/map/AssimpIO.hpp>
+#include <assimp/postprocess.h>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
@@ -460,37 +461,60 @@ rmagine::EmbreeGeometryPtr RmagineEmbreeMapSystem::BuildVisualInstance(
           std::cerr << "[RmagineEmbreeMapSystem] Loading mesh from '" << uri
                     << "' (cache miss)." << std::endl;
         }
-        std::shared_ptr<rmagine::EmbreeMesh> embree_mesh;
         rmagine::AssimpIO io;
-        const aiScene *ascene = io.ReadFile(uri, 0);
+        // Collada commonly stores faces as polygons and distributes meshes
+        // below transformed scene nodes. Bake each node transform into its
+        // vertices once, then triangulate for Embree. This avoids applying
+        // the Collada hierarchy again through nested Embree instances.
+        const aiScene *ascene = io.ReadFile(
+          uri, aiProcess_Triangulate | aiProcess_PreTransformVertices);
         if(ascene && ascene->HasMeshes())
         {
-          embree_mesh = std::make_shared<rmagine::EmbreeMesh>(ascene->mMeshes[0]);
+          mesh_scene = std::make_shared<rmagine::EmbreeScene>();
+          std::size_t mesh_count = 0;
+          for(std::size_t i = 0; i < ascene->mNumMeshes; ++i)
+          {
+            const aiMesh *assimp_mesh = ascene->mMeshes[i];
+            if(!assimp_mesh || !(assimp_mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE))
+            {
+              continue;
+            }
+
+            auto embree_mesh = std::make_shared<rmagine::EmbreeMesh>(assimp_mesh);
+            embree_mesh->setQuality(RTC_BUILD_QUALITY_LOW);
+            embree_mesh->apply();
+            embree_mesh->commit();
+            mesh_scene->add(embree_mesh);
+            ++mesh_count;
+          }
+          if(mesh_count == 0)
+          {
+            mesh_scene.reset();
+          }
         } else {
           auto fallback = BuildEmbreeMeshFromGzCommon(uri);
-          embree_mesh = std::dynamic_pointer_cast<rmagine::EmbreeMesh>(fallback);
-          if(embree_mesh && debug_)
+          if(fallback)
           {
-            std::cerr << "[RmagineEmbreeMapSystem] Assimp failed to parse '" << uri
-                      << "', used gz-common's native mesh loader instead." << std::endl;
+            mesh_scene = fallback->makeScene();
+            if(debug_)
+            {
+              std::cerr << "[RmagineEmbreeMapSystem] Assimp failed to parse '" << uri
+                        << "', used gz-common's native mesh loader instead." << std::endl;
+            }
           }
         }
-        if(!embree_mesh)
+        if(!mesh_scene)
         {
           break;
         }
 
-        embree_mesh->setScale(mesh_scale);
-        embree_mesh->setQuality(RTC_BUILD_QUALITY_LOW);
-        embree_mesh->apply();
-        embree_mesh->commit();
-
-        mesh_scene = embree_mesh->makeScene();
+        mesh_scene->setQuality(RTC_BUILD_QUALITY_LOW);
         mesh_scene->commit();
         mesh_cache_[mesh_cache_key] = mesh_scene;
       }
 
       auto instance = mesh_scene->instantiate();
+      instance->setScale(mesh_scale);
       instance->apply();
       embree_geom = instance;
       break;
