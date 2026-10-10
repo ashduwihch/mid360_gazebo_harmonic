@@ -190,6 +190,8 @@ NVENC preset 可能初始化失败，并导致 Gazebo 进程内存持续增长�
 
 ## 在自定义 World 中使用
 
+自定义 World 加入 MID-360 的 Embree 插件后，Gazebo Harmonic 会切换为显式插件加载方式，因此必须同时完整声明 Gazebo 和 PX4 所需的系统插件，否则会出现点云、IMU 或相机无数据的问题。
+
 在 `<world>` 中加入一次 Embree 地图系统：
 
 ```xml
