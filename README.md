@@ -7,6 +7,13 @@ Gazebo Classic 已于 2025 年 1 月停止维护，原有的
 `PointCloud2`、Livox `CustomMsg` 和 IMU 接口，可无缝接入
 FAST-LIO2 ROS 2 版。
 
+## 版本记录
+
+| 版本 | 日期 | 更新内容 |
+| --- | --- | --- |
+| `v0.2.0` | 2026-10-13 | 在插件发布层统一ROS输出坐标：同步转换 `PointCloud2`、Livox `CustomMsg` 与IMU，使输出坐标系的X轴与无人机机头方向一致。 |
+| `v0.1.0` | 2026-09-25 | 发布Gazebo Harmonic MID-360仿真插件初始版本。 |
+
 如果本项目对您有帮助，欢迎点亮右上角的 ⭐ **Star**！
 
 <p align="center">

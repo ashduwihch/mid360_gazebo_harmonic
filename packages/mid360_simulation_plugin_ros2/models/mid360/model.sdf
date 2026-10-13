@@ -70,6 +70,8 @@
       <imu_topic>/livox/imu</imu_topic>
       <gz_imu_topic>/mid360/imu_gz</gz_imu_topic>
       <frame_id>livox_frame</frame_id>
+      <!-- ROS输出帧相对Gazebo传感器link绕Z轴旋转180度，使+X与机头一致。 -->
+      <output_yaw>3.141592653589793</output_yaw>
       <publish_pointcloud_type>3</publish_pointcloud_type>
     </plugin>
   </model>

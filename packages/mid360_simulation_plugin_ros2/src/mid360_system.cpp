@@ -136,6 +136,11 @@ public:
     this->pointRate = std::max(1.0, SdfValue<double>(sdf, "point_rate", 200000.0));
     this->publishPointcloudType = SdfValue<int>(sdf, "publish_pointcloud_type", 2);
     this->mapKey = SdfValue<std::string>(sdf, "map_key", "default");
+    this->outputYaw = SdfValue<double>(sdf, "output_yaw", 0.0);
+    this->outputCos = std::cos(this->outputYaw);
+    this->outputSin = std::sin(this->outputYaw);
+    this->orientationCorrectionCos = std::cos(-0.5 * this->outputYaw);
+    this->orientationCorrectionSin = std::sin(-0.5 * this->outputYaw);
 
     const auto backendName = SdfValue<std::string>(sdf, "ray_backend", "embree");
     if (backendName == "embree")
@@ -220,7 +225,8 @@ public:
     this->configured = true;
     gzmsg << "[MID360] Loaded " << this->pattern.size()
           << " scan directions; " << this->samplesPerScan << " samples at "
-          << this->updateRate << " Hz; backend=" << backendName << ".\n";
+          << this->updateRate << " Hz; backend=" << backendName
+          << "; output_yaw=" << this->outputYaw << " rad.\n";
   }
 
   void PreUpdate(const gz::sim::UpdateInfo &info,
@@ -460,8 +466,13 @@ private:
       if (!result.valid)
         continue;
 
-      const float x = result.x;
-      const float y = result.y;
+      // Keep ray casting in the physical sensor link, but express every ROS
+      // output in the configured virtual Livox frame.  PointCloud2 and
+      // CustomMsg intentionally share these transformed coordinates.
+      const float x = static_cast<float>(
+        this->outputCos * result.x - this->outputSin * result.y);
+      const float y = static_cast<float>(
+        this->outputSin * result.x + this->outputCos * result.y);
       const float z = result.z;
       const float intensity = 100.0F;
       const std::uint8_t tag = 0x10;
@@ -522,15 +533,50 @@ private:
       output.header.stamp.sec = input.header().stamp().sec();
       output.header.stamp.nanosec = input.header().stamp().nsec();
     }
-    output.orientation.w = input.orientation().w();
-    output.orientation.x = input.orientation().x();
-    output.orientation.y = input.orientation().y();
-    output.orientation.z = input.orientation().z();
-    output.angular_velocity.x = input.angular_velocity().x();
-    output.angular_velocity.y = input.angular_velocity().y();
+    // Gazebo reports the physical sensor-link orientation.  The ROS output
+    // frame is rotated by outputYaw, so its world orientation is
+    // q_world_sensor * q_sensor_output, where q_sensor_output uses -outputYaw.
+    const double rawW = input.orientation().w();
+    const double rawX = input.orientation().x();
+    const double rawY = input.orientation().y();
+    const double rawZ = input.orientation().z();
+    double outW = rawW * this->orientationCorrectionCos -
+      rawZ * this->orientationCorrectionSin;
+    double outX = rawX * this->orientationCorrectionCos +
+      rawY * this->orientationCorrectionSin;
+    double outY = rawY * this->orientationCorrectionCos -
+      rawX * this->orientationCorrectionSin;
+    double outZ = rawW * this->orientationCorrectionSin +
+      rawZ * this->orientationCorrectionCos;
+    const double quaternionNorm = std::sqrt(
+      outW * outW + outX * outX + outY * outY + outZ * outZ);
+    if (quaternionNorm > 1e-12)
+    {
+      outW /= quaternionNorm;
+      outX /= quaternionNorm;
+      outY /= quaternionNorm;
+      outZ /= quaternionNorm;
+    }
+    else
+    {
+      outW = 1.0;
+      outX = 0.0;
+      outY = 0.0;
+      outZ = 0.0;
+    }
+    output.orientation.w = outW;
+    output.orientation.x = outX;
+    output.orientation.y = outY;
+    output.orientation.z = outZ;
+    output.angular_velocity.x = this->outputCos * input.angular_velocity().x() -
+      this->outputSin * input.angular_velocity().y();
+    output.angular_velocity.y = this->outputSin * input.angular_velocity().x() +
+      this->outputCos * input.angular_velocity().y();
     output.angular_velocity.z = input.angular_velocity().z();
-    output.linear_acceleration.x = input.linear_acceleration().x();
-    output.linear_acceleration.y = input.linear_acceleration().y();
+    output.linear_acceleration.x = this->outputCos * input.linear_acceleration().x() -
+      this->outputSin * input.linear_acceleration().y();
+    output.linear_acceleration.y = this->outputSin * input.linear_acceleration().x() +
+      this->outputCos * input.linear_acceleration().y();
     output.linear_acceleration.z = input.linear_acceleration().z();
     this->imuPublisher->publish(output);
   }
@@ -552,6 +598,11 @@ private:
   double maxRange{40.0};
   double updateRate{10.0};
   double pointRate{200000.0};
+  double outputYaw{0.0};
+  double outputCos{1.0};
+  double outputSin{0.0};
+  double orientationCorrectionCos{1.0};
+  double orientationCorrectionSin{0.0};
   std::string topic;
   std::string frameId;
   std::string imuTopic;
