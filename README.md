@@ -11,7 +11,7 @@ FAST-LIO2 ROS 2 版。
 
 | 版本 | 日期 | 更新内容 |
 | --- | --- | --- |
-| `v0.2.0` | 2026-10-13 | 在插件发布层统一ROS输出坐标：同步转换 `PointCloud2`、Livox `CustomMsg` 与IMU，使输出坐标系的X轴与无人机机头方向一致。 |
+| `v0.2.0` | 2026-10-13 | 修复MID-360安装坐标与无人机机体方向相差180°，导致FAST-LIO2、PGO及RViz中的 `body` X轴与真实机头相反的问题；在插件发布层同步转换 `PointCloud2`、Livox `CustomMsg` 与IMU，使ROS输出坐标方向保持一致。 |
 | `v0.1.0` | 2026-09-25 | 发布Gazebo Harmonic MID-360仿真插件初始版本。 |
 
 如果本项目对您有帮助，欢迎点亮右上角的 ⭐ **Star**！
